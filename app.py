@@ -1,24 +1,22 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-import gdown
-import os
 import joblib
+import os
+import gdown
 
+st.set_page_config(page_title="Dashboard Harga Mobil Bekas", layout="wide")
+
+# Unduh model_rf.pkl dari Google Drive jika belum ada
 model_path = "model_rf.pkl"
 if not os.path.exists(model_path):
     url = "https://drive.google.com/uc?id=1uqQ80WNa3JhFdhH-wNoW9aaflhz4SMe-"
     gdown.download(url, model_path, quiet=False)
 
+# Load model dan data lainnya
 model = joblib.load(model_path)
-
-st.set_page_config(page_title="Dashboard Harga Mobil Bekas", layout="wide")
-
-# Load model dan data
-model = joblib.load("model_rf.pkl")
 columns = joblib.load("columns.pkl")
 df_encoded = pd.read_csv("data_encoded.csv")
 eval_df = pd.read_csv("model_eval_result.csv")
@@ -26,10 +24,10 @@ eval_df = pd.read_csv("model_eval_result.csv")
 # Sidebar navigasi
 st.sidebar.title("Navigasi")
 page = st.sidebar.radio("Pilih Halaman", [
-    "📊 Eksplorasi Data", 
-    "🧪 Evaluasi Model", 
-    "📉 Distribusi Residual", 
-    "🔥 Feature Importance", 
+    "📊 Eksplorasi Data",
+    "🧪 Evaluasi Model",
+    "📉 Distribusi Residual",
+    "🔥 Feature Importance",
     "🔮 Prediksi Harga"
 ])
 
@@ -51,7 +49,7 @@ if page == "📊 Eksplorasi Data":
     sns.scatterplot(data=df_encoded, x="year_produced", y="price_usd", ax=ax3, alpha=0.3)
     st.pyplot(fig3)
 
-    st.subheader("Boxplot Harga berdasarkan Jenis Bahan Bakar")
+    st.subheader("Boxplot Harga Berdasarkan Jenis Bahan Bakar")
     fuel_cols = [col for col in df_encoded.columns if col.startswith("engine_fuel_")]
     melted = df_encoded.melt(id_vars="price_usd", value_vars=fuel_cols, var_name="fuel", value_name="value")
     melted = melted[melted["value"] == 1]
@@ -147,7 +145,6 @@ elif page == "🔮 Prediksi Harga":
         if col not in input_data:
             input_data[col] = [0]
 
-    # One-hot
     if f"drivetrain_{drivetrain}" in columns:
         input_data[f"drivetrain_{drivetrain}"] = [1]
     if f"transmission_{transmission}" in columns:
